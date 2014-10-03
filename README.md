@@ -29,7 +29,6 @@ $epub->AddPage( '<b>Test</b>', false, 'Title 2' );
 $epub->AddPage( '<img src="images/2.jpg" />', false, 'Title 3' );
 $epub->AddPage( '<img src="images/3.jpg" />', false, 'Title 4' );
 $epub->AddPage( '<img src="images/4.jpg" />', false, 'Title 5' );
-$epub->AddPage( '<img src="http://www.facequebeauty.com.au/images/beauty-salon.jpg" />', false, 'Title 6' );
 
 // Add image cover
 $epub->AddImage( 'images/1.jpg', 'image/jpeg', true );
