@@ -5,7 +5,7 @@ This PHP class creates e-books using the EPUB standard format.
 
 You can see an example inside the index.php file.
 
-´´´php
+```php
 <?php
 ini_set('display_errors', 0);
 
@@ -50,4 +50,6 @@ if ( ! $epub->error ) {
 } else {
     echo $epub->error;
 }
-´´´
+```
+
+As simples as that!
