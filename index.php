@@ -20,7 +20,7 @@ $epub->language = 'pt';
 $epub->rights = 'Public Domain';
 $epub->publisher = 'http://www.tutsup.com/';
 
-// You can specity you own CSS
+// You can specity your own CSS
 // This is from https://github.com/mattharrison/
 $epub->css = file_get_contents('base.css');
 
