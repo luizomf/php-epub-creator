@@ -420,8 +420,8 @@ class TPEpubCreator
      *
      * It will simply fill the $css property
      */    
-    public function OpenCSS( $css = null ) {
-        if ( ! $css ) {
+    public function OpenCSS() {
+        if ( ! $this->css ) {
             $this->css  = 'body {';
             $this->css .= 'margin-left: .5em;';
             $this->css .= 'margin-right: .5em;';
@@ -432,8 +432,6 @@ class TPEpubCreator
             $this->css .= 'font-size:12pt;';
             $this->css .= 'font-weight:400;';
             $this->css .= '};';
-        } else {
-            $this->css  = $css;
         }
     }
     
