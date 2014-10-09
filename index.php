@@ -29,6 +29,7 @@ $epub->css = file_get_contents('base.css');
 
 // Add page from file (just the <body> content)
 // You have to remove doctype, head and body tags
+// Sintax: $epub->AddImage( XHTML, file, title );
 $epub->AddPage( false, 'file.txt', 'Título (check accent)' );
 
 // Add page content directly (just the <body> content)
@@ -40,13 +41,16 @@ $epub->AddPage( '<img src="images/4.jpg" />', false, 'Title 5' );
 
 // Add image cover
 // Make sure only one image is set to cover (last argument = true).
-// If more than one image is set to cover, readers would not load the e-book
-$epub->AddImage( 'images/1.jpg', 'image/jpeg', true );
+// If more than one image is set to cover, readers would not load the e-book.
+// Sintax: $epub->AddImage( image path, mimetype, cover );
+$epub->AddImage( 'images/1.jpg', false, true );
 
 // Add another images (last arg is set to false - not cover - remember that)
 $epub->AddImage( 'images/2.jpg', 'image/jpeg', false );
 $epub->AddImage( 'images/3.jpg', 'image/jpeg', false );
-$epub->AddImage( 'images/4.jpg', 'image/jpeg', false );
+
+// If you don't send the mimetype, the class will try to get it from the file
+$epub->AddImage( 'images/4.jpg', false, false );
 
 // Create the EPUB
 // If there is some error, the epub file will not be created

@@ -23,6 +23,15 @@ class TPEpubCreator
     private $abspath;
     
     /**
+     * This is the cover img path
+     *
+     * @access private
+     * @var string
+     * @since 1.0.0
+     */
+    private $cover_img;
+    
+    /**
      * This is the content.opf file
      *
      * @access private
@@ -216,18 +225,14 @@ class TPEpubCreator
         $this->image_key++;
         
         // Checks if the image exists first
-        if ( ! file_exists( $path ) ) {
+        /*if ( ! file_exists( $path ) ) {
             $this->error = 'Cannot find image ' . $path . '.';
             return;
-        }
+        }*/
         
         $this->images[$this->image_key]['path'] = $path;
         $this->images[$this->image_key]['type'] = $type;
         $this->images[$this->image_key]['cover'] = $cover;
-        
-        if ( ! $this->cover && $cover ) {
-            $this->cover = $cover;
-        }
     }
     
     /**
@@ -313,18 +318,18 @@ class TPEpubCreator
             $page = 'page' . $key;
             
             // OPF
-            $opf .= '<item id="' . $page . '" href="' . $page . '.xhtml" media-type="application/xhtml+xml" />';
+            $opf .= '<item id="' . $page . '" href="' . $page . '.xhtml" media-type="application/xhtml+xml" />' . "\r\n";
             
             // NCX
-            $ncx  .= '<navPoint id="' . $page . '" playOrder="' . $key . '">';
-            $ncx .= '<navLabel>';
-            $ncx .= '<text>' . $value['title'] . '</text>';
-            $ncx .= '</navLabel>';
-            $ncx .= '<content src="' . $page . '.xhtml"/>';
-            $ncx .= '</navPoint>';
+            $ncx  .= '<navPoint id="' . $page . '" playOrder="' . $key . '">' . "\r\n";
+            $ncx .= '<navLabel>' . "\r\n";
+            $ncx .= '<text>' . $value['title'] . '</text>' . "\r\n";
+            $ncx .= '</navLabel>' . "\r\n";
+            $ncx .= '<content src="' . $page . '.xhtml"/>' . "\r\n";
+            $ncx .= '</navPoint>' . "\r\n";
             
             // Fill the spine
-            $fill_opf_spine .= '<itemref idref="' . $page . '" />';
+            $fill_opf_spine .= '<itemref idref="' . $page . '" />' . "\r\n";
         }
         
         // If there are images, loop the values
@@ -337,23 +342,31 @@ class TPEpubCreator
                 // Mime-type
                 $image_type = $image_value['type'];
                 
+                // If we don't have a mimetype for the image
+                // We'll try to get it
+                if ( ! $image_type ) {
+                    $image_type = getimagesize( $image_value['path'] );
+                    $image_type = $image_type['mime'];
+                }
+                
                 // Try to copy the image
-                if ( ! copy( $image_value['path'], $new_image ) ) {
+                if ( ! @copy( $image_value['path'], $new_image ) ) {
                     $this->error = 'Cannot copy ' . $image_value . '.';
                     return;
                 }
                 
                 // If there is a cover, create another ID and XHTML page later
-                if (  ! empty( $this->cover ) && ! empty( $image_value['cover'] ) ) {
-                    $opf .= '<item id="cover" href="cover.xhtml" media-type="application/xhtml+xml" />';
+                if ( ! empty( $image_value['cover'] ) ) {
+                    $opf .= '<item id="cover" href="cover.xhtml" media-type="application/xhtml+xml" />' . "\r\n";
                     $opf .= '<item id="cover-image';
+                    $this->cover_img = basename( $image_value['path'] );
                 } else {
                     $opf .= '<item id="img' . $image_key;
                 }
                 
                 // End the image <item> tag
                 $opf .= '" href="images/' . basename( $image_value['path'] );
-                $opf .= '" media-type="' . $image_type . '" />';
+                $opf .= '" media-type="' . $image_type . '" />' . "\r\n";
             }           
         }
         
@@ -361,11 +374,11 @@ class TPEpubCreator
         $this->ncx[] = $ncx;
         
         $this->opf[] = $opf;
-        $this->opf[] = '</manifest><spine toc="ncx">';
+        $this->opf[] = '</manifest><spine toc="ncx">' . "\r\n";
         
         // If there's a cover, we'll need an <itemref idref="cover" />
-        if ( $this->cover ) {
-            $this->opf[] = '<itemref idref="cover" />';
+        if ( $this->cover_img ) {
+            $this->opf[] = "<itemref idref=\"cover\" />\r\n";
         }
         
         // Fill the spine
@@ -380,20 +393,27 @@ class TPEpubCreator
         $this->CreateNCX();
         
         // XHTML default page header
-        $page_content  = "<?xml version='1.0' encoding='utf-8'?>";
-        $page_content .= '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">';
-        $page_content .= '<html xmlns="http://www.w3.org/1999/xhtml">';
-        $page_content .= '<head>';
-        $page_content .= '<meta content="application/xhtml+xml; charset=utf-8" http-equiv="Content-Type"/>';
-        $page_content .= '<link href="css.css" type="text/css" rel="stylesheet"/>';
-        $page_content .= '</head>';
-        $page_content .= '<body>';
+        $page_content  = "<?xml version='1.0' encoding='utf-8'?>" . "\r\n";
+        $page_content .= '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">' . "\r\n";
+        $page_content .= '<html xmlns="http://www.w3.org/1999/xhtml">' . "\r\n";
+        $page_content .= '<head>' . "\r\n";
+        $page_content .= '<meta content="application/xhtml+xml; charset=utf-8" http-equiv="Content-Type"/>' . "\r\n";
+        $page_content .= '<link href="css.css" type="text/css" rel="stylesheet"/>' . "\r\n";
+        $page_content .= '</head>' . "\r\n";
+        $page_content .= '<body>' . "\r\n";
         
         // Loop the pages
         foreach( $this->pages as $key => $value ) {
             
             // Page file
             $page = 'page' . $key . '.xhtml';
+            
+            // Replace unwanted tags (for now scripts and iframes)
+            $value['content'] = preg_replace(
+                '/\<(script|iframe)[^>]*\>.*?\<\/(script|iframe)\>/mis', 
+                '', 
+                $value['content']
+            );
             
             // Fill the page content and ends the XHTML
             $value['content']  = $page_content . $value['content'];
@@ -404,9 +424,9 @@ class TPEpubCreator
         }
         
         // If there's a cover, create its page
-        if ( $this->cover  ) {
+        if ( ! empty( $this->cover_img )  ) {
             $cover_page  = $page_content;
-            $cover_page .= '<img src="images/' . basename( $image_value['path'] ) . '" />';
+            $cover_page .= '<img class="cover-image" width="600" height="800" src="images/' . $this->cover_img . '" />' . "\r\n";
             $cover_page .= '</body></html>';
             $this->CreateFile( $this->temp_folder . '/OEBPS/cover.xhtml', $cover_page );
         }
@@ -441,19 +461,19 @@ class TPEpubCreator
      * Fill the content.opf file ($opf property)
      */    
     private function OpenOPF() {
-        $this->opf[] = '<?xml version="1.0" encoding="UTF-8"?>';
-        $this->opf[] = '<package xmlns="http://www.idpf.org/2007/opf" unique-identifier="BookID" version="2.0" >';
-        $this->opf[] = '<metadata xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:opf="http://www.idpf.org/2007/opf">';
-        $this->opf[] = '<dc:title>' . $this->title . '</dc:title>';
-        $this->opf[] = '<dc:creator opf:file-as="' . $this->creator . '" opf:role="aut">' . $this->creator . '</dc:creator>';
-        $this->opf[] = '<dc:language>' . $this->language . '</dc:language>';
-        $this->opf[] = '<dc:rights>' . $this->rights . '</dc:rights>';
+        $this->opf[] = '<?xml version="1.0" encoding="UTF-8"?>' . "\r\n";
+        $this->opf[] = '<package xmlns="http://www.idpf.org/2007/opf" unique-identifier="BookID" version="2.0" >' . "\r\n";
+        $this->opf[] = '<metadata xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:opf="http://www.idpf.org/2007/opf">' . "\r\n";
+        $this->opf[] = '<dc:title>' . $this->title . '</dc:title>' . "\r\n";
+        $this->opf[] = '<dc:creator opf:file-as="' . $this->creator . '" opf:role="aut">' . $this->creator . '</dc:creator>' . "\r\n";
+        $this->opf[] = '<dc:language>' . $this->language . '</dc:language>' . "\r\n";
+        $this->opf[] = '<dc:rights>' . $this->rights . '</dc:rights>' . "\r\n";
         $this->opf[] = '<dc:publisher>' . $this->publisher . '</dc:publisher>';
-        $this->opf[] = '<dc:identifier id="BookID" opf:scheme="UUID">' . $this->uuid . '</dc:identifier>';
-        $this->opf[] = '<meta name="cover" content="cover" />';
-        $this->opf[] = '</metadata><manifest>';
-        $this->opf[] = '<item id="ncx" href="toc.ncx" media-type="application/x-dtbncx+xml" />';
-        $this->opf[] = '<item id="style" href="css.css" media-type="text/css" />';
+        $this->opf[] = '<dc:identifier id="BookID" opf:scheme="UUID">' . $this->uuid . '</dc:identifier>' . "\r\n";
+        $this->opf[] = '<meta name="cover" content="cover" />' . "\r\n";
+        $this->opf[] = '</metadata><manifest>' . "\r\n";
+        $this->opf[] = '<item id="ncx" href="toc.ncx" media-type="application/x-dtbncx+xml" />' . "\r\n";
+        $this->opf[] = '<item id="style" href="css.css" media-type="text/css" />' . "\r\n";
     }
     
     /**
@@ -462,7 +482,7 @@ class TPEpubCreator
      * End of the content.opf file
      */    
     private function CloseOPF() {
-        $this->opf[] = '</spine></package>';
+        $this->opf[] = '</spine></package>' . "\r\n";
     }
     
     /**
@@ -486,16 +506,16 @@ class TPEpubCreator
      * Fill the toc.ncx content ($ncx property)
      */    
     private function OpenNCX() {
-        $this->ncx[] = '<?xml version="1.0" encoding="UTF-8"?>';
-        $this->ncx[] = '<ncx xmlns="http://www.daisy.org/z3986/2005/ncx/" version="2005-1">';
-        $this->ncx[] = '<meta name="dtb:uid" content="' . $this->uuid . '"/>';
-        $this->ncx[] = '<head>';
-        $this->ncx[] = '<meta name="dtb:depth" content="1"/>';
-        $this->ncx[] = '<meta name="dtb:totalPageCount" content="0"/>';
-        $this->ncx[] = '<meta name="dtb:maxPageNumber" content="0"/>';
-        $this->ncx[] = '</head>';
-        $this->ncx[] = '<docTitle><text>' . $this->title . '</text></docTitle>';
-        $this->ncx[] = '<navMap>';
+        $this->ncx[] = '<?xml version="1.0" encoding="UTF-8"?>' . "\r\n";
+        $this->ncx[] = '<ncx xmlns="http://www.daisy.org/z3986/2005/ncx/" version="2005-1">' . "\r\n";
+        $this->ncx[] = '<meta name="dtb:uid" content="' . $this->uuid . '"/>' . "\r\n";
+        $this->ncx[] = '<head>' . "\r\n";
+        $this->ncx[] = '<meta name="dtb:depth" content="1"/>' . "\r\n";
+        $this->ncx[] = '<meta name="dtb:totalPageCount" content="0"/>' . "\r\n";
+        $this->ncx[] = '<meta name="dtb:maxPageNumber" content="0"/>' . "\r\n";
+        $this->ncx[] = '</head>' . "\r\n";
+        $this->ncx[] = '<docTitle><text>' . $this->title . '</text></docTitle>' . "\r\n";
+        $this->ncx[] = '<navMap>' . "\r\n";
     }
     
     /**
@@ -504,8 +524,8 @@ class TPEpubCreator
      * Closes the toc.ncx file content
      */    
     private function CloseNCX() {
-        $this->ncx[] = '</navMap>';
-        $this->ncx[] = '</ncx>';
+        $this->ncx[] = '</navMap>' . "\r\n";
+        $this->ncx[] = '</ncx>' . "\r\n";
     }
     
     /**
