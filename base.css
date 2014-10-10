@@ -1,3 +1,8 @@
+*, *:before, *:after {
+    -moz-box-sizing: border-box;
+    -webkit-box-sizing: border-box; 
+    box-sizing: border-box; 
+}
 body {
     margin: 0;
     padding: 0;
@@ -5,10 +10,10 @@ body {
     text-align: justify;
 }
 img {
-    display: block;
-    margin: 0.5em auto;
-    max-width: 100%;
-    height: auto;
+    display: block !important;
+    margin: 0.5em auto !important;
+    max-width: 100% !important;
+    height: auto !important;
 }
 pre {
     white-space: pre-wrap;
@@ -23,6 +28,7 @@ p , table{
 }
 table td, table th {
     border-bottom: 1px solid #ccc;
-    font-size: 85%;
+    font-size: 80%;
     color: #444;
+    text-align: left;
 }

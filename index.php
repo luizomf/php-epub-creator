@@ -21,22 +21,23 @@ $epub->rights = 'Public Domain';
 $epub->publisher = 'http://www.tutsup.com/';
 
 // You can specity your own CSS
-// This is from https://github.com/mattharrison/
 $epub->css = file_get_contents('base.css');
 
 // $epub->uuid = '';  // You can specify your own uuid
 
-
 // Add page from file (just the <body> content)
 // You have to remove doctype, head and body tags
-// Sintax: $epub->AddImage( XHTML, file, title );
+// Sintax: $epub->AddImage( XHTML, file, title, download images );
 $epub->AddPage( false, 'file.txt', 'Título (check accent)' );
 
 // Add page content directly (just the <body> content)
 // You must not use doctype, head and body tags (only XHTML body content)
 $epub->AddPage( '<b>Test</b>', false, 'Title 2' );
 $epub->AddPage( '<img src="images/2.jpg" />', false, 'Title 3' );
-$epub->AddPage( '<img src="images/3.jpg" />', false, 'Title 4' );
+
+// Here the last param tells the class to download de image
+$epub->AddPage( '<img src="images/3.jpg" />', false, 'Title 4', true );
+
 $epub->AddPage( '<img src="images/4.jpg" />', false, 'Title 5' );
 
 // Add image cover
@@ -47,7 +48,6 @@ $epub->AddImage( 'images/1.jpg', false, true );
 
 // Add another images (last arg is set to false - not cover - remember that)
 $epub->AddImage( 'images/2.jpg', 'image/jpeg', false );
-$epub->AddImage( 'images/3.jpg', 'image/jpeg', false );
 
 // If you don't send the mimetype, the class will try to get it from the file
 $epub->AddImage( 'images/4.jpg', false, false );

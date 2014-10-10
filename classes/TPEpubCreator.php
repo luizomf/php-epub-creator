@@ -68,6 +68,15 @@ class TPEpubCreator
     private $images = array();
     
     /**
+     * This is the new images array
+     *
+     * @access private
+     * @var array
+     * @since 1.0.0
+     */
+    private $new_images = array();
+    
+    /**
      * This is to check if a cover has been added
      *
      * @access private
@@ -247,10 +256,16 @@ class TPEpubCreator
      * @param string $content Page content (XHTML)
      * @param string $file A file that has the page content (XHTML)
      * @param string $title Page's title
+     * @param bool $download_images Whether to download images from the HTML or not
      *
      * @return bool false if the image does not exists
      */    
-    public function AddPage( $content = null, $file = null, $title = 'Untitled' ) {
+    public function AddPage( 
+        $content = null, 
+        $file = null, 
+        $title = 'Untitled',
+        $download_images = false
+    ) {
         // Set the key for the page
         $this->key++;
         
@@ -274,6 +289,25 @@ class TPEpubCreator
             
             $file = file_get_contents( $file );
             $this->pages[$this->key]['content'] = $file;
+        }
+        
+        // If the $download_images param is set to true, we'll try to download
+        // images found and add it to you e-book
+        if ( $download_images ) {
+            $found_images = preg_match_all(
+                '/(\<img.*?src=[\'|"])(.*?)([\'|"].*?\>)/mis', 
+                $this->pages[$this->key]['content'], 
+                $image_matches
+            );
+            
+            // Just need the URLs
+            if ( $found_images ) {
+                if ( ! empty( $image_matches[2] ) ) {
+                    foreach ( $image_matches[2] as $img ) {
+                        $this->AddImage( $img );
+                    }
+                }
+            }
         }
         
         // Set the page title
@@ -337,7 +371,9 @@ class TPEpubCreator
             foreach( $this->images as $image_key => $image_value ) {
                 
                 // New image have the same name as the old one
-                $new_image = $this->temp_folder . '/OEBPS/images/' . basename( $image_value['path'] );
+                $new_image  = $this->temp_folder . '/OEBPS/images/';
+                $new_image .= mt_rand(0,9999) . '_';
+                $new_image .= basename( $image_value['path'] );
                 
                 // Mime-type
                 $image_type = $image_value['type'];
@@ -355,17 +391,20 @@ class TPEpubCreator
                     return;
                 }
                 
+                // Set the new images name
+                $this->new_images[$image_key]['path'] = $new_image;
+                
                 // If there is a cover, create another ID and XHTML page later
                 if ( ! empty( $image_value['cover'] ) ) {
                     $opf .= '<item id="cover" href="cover.xhtml" media-type="application/xhtml+xml" />' . "\r\n";
                     $opf .= '<item id="cover-image';
-                    $this->cover_img = basename( $image_value['path'] );
+                    $this->cover_img = basename( $new_image );
                 } else {
                     $opf .= '<item id="img' . $image_key;
                 }
                 
                 // End the image <item> tag
-                $opf .= '" href="images/' . basename( $image_value['path'] );
+                $opf .= '" href="images/' . basename( $new_image );
                 $opf .= '" media-type="' . $image_type . '" />' . "\r\n";
             }           
         }
@@ -418,6 +457,15 @@ class TPEpubCreator
             // Fill the page content and ends the XHTML
             $value['content']  = $page_content . $value['content'];
             $value['content'] .= '</body></html>';
+            
+            // Replace the HTML images to the new images
+            foreach( $this->images as $check_image_key => $check_images ) {
+                $value['content'] = str_replace ( 
+                    $check_images['path'],
+                    'images/' . basename( $this->new_images[$check_image_key]['path'] ),
+                    $value['content']
+                );
+            }
             
             // Create the file
             $this->CreateFile( $this->temp_folder . '/OEBPS/' . $page, $value['content'] );
