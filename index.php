@@ -27,7 +27,7 @@ $epub->css = file_get_contents('base.css');
 
 // Add page from file (just the <body> content)
 // You have to remove doctype, head and body tags
-// Sintax: $epub->AddImage( XHTML, file, title, download images );
+// Sintax: $epub->AddPage( XHTML, file, title, download images );
 $epub->AddPage( false, 'file.txt', 'Título (check accent)' );
 
 // Add page content directly (just the <body> content)
