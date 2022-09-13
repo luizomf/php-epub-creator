@@ -10,7 +10,7 @@
  * @author   Luiz Otávio Miranda <luizomf@gmail.com>
  * @version  $Revision: 1.0.0 $
  * @access   public
- * @see      https://github.com/rolfcleveringa/php-epub-creator
+ * @see      https://github.com/luizomf/php-epub-creator
  */
 class TPEpubCreator
 {
